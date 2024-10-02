@@ -1,0 +1,119 @@
+name: Autograding Tests
+'on':
+  push:
+    paths:
+      - "app/**"
+      - "public/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "config/**"
+      - ".github/workflows/classroom.yml"
+  workflow_dispatch:
+
+env:
+  project_name: test-${{ github.run_id }}
+  LANG: ja_JP.UTF-8
+  CONTAINER_USER: vscode
+  # Laravelを使わず純粋なPHPで作成した場合はtrueに設定してください
+  NO_LARAVEL: true
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+
+    - name: Laravel環境フラグの設定
+      id: no_laravel
+      run: |
+        # if [ ! -f composer.json ]; then
+        #   echo "::set-output name=result::NO_LARAVEL=1"
+        #   exit 0
+        # fi
+        if [ ${{ env.NO_LARAVEL}} = true ]; then
+          echo "::set-output name=result::NO_LARAVEL=1"
+        else
+          echo "::set-output name=result::"
+        fi
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: SECRETから.envファイルを作成
+      # actの環境ではスキップしてよい
+      if: ${{ !env.ACT }}
+      run: |
+        if [ ${{ env.NO_LARAVEL }} = true ]; then
+          echo "Laravelを使わず純粋なPHPで作成した場合は.envファイルが不要です"
+          exit 0
+        fi
+        # GH SecretのDOTENV変数に.envがまるのまま入っているのでリダイレクトで作成する
+        echo "${{ secrets.DOTENV }}" > dot.env
+        # dot.envのファイルサイズが10バイト以下の場合、DOTENV secretが無いとみなしてエラーとする
+        if [ $(wc -c < dot.env) -le 10 ]; then
+          echo "GitHub SecretのDOTENVが未定義のようです、 Settings > Secrets and Variables > Actions にて作成してください"
+          exit 1
+        fi
+        mv dot.env .env
+    - name: コンテナの起動
+      run: docker compose -p ${{ env.project_name }} -f compose.yml -f compose_test.yml up -d --quiet-pull
+    - name: 結果画像の削除
+      run: |
+        rm -vf results/*.png
+    - name: リポジトリの所有者を変更(GitHub上のみ実行)
+      if: ${{ !env.ACT }}
+      run: |
+        docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINE_USER }} /app
+
+    - name: データベースへの接続テスト
+      id: dbcheck
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: dbcheck
+        setup-command: 'docker compose ps'
+        command: 'docker compose -p ${{ env.project_name }} exec app make test FILE=tests/test_db_connect.py ${{ steps.no_laravel.outputs.result }}'
+        max-score: 1
+        timeout: 2
+    - name: トップページの表示テスト
+      id: toppage
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: toppage
+        command: 'docker compose -p ${{ env.project_name }} exec app make test FILE=tests/test_minishop_toppage.py ${{ steps.no_laravel.outputs.result }}'
+        max-score: 1
+        timeout: 2
+
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        DBCHECK_RESULTS: "${{steps.dbcheck.outputs.result}}"
+        TOPPAGE_RESULTS: "${{steps.toppage.outputs.result}}"
+      with:
+        runners: dbcheck,toppage
+
+    # - name: アーティファクト置場の確認
+    #   if: always()
+    #   run: |
+    #       mkdir -p /tmp/artifacts-${{ env.project_name }}
+    #       echo ARTIFACTS_DIR=/tmp/artifacts-${{ env.project_name }} >> $GITHUB_ENV
+    # - name: 結果画像の一覧作成
+    #   if: always()
+    #   run: |
+    #     docker compose -p ${{ env.project_name }} cp app:/app/results ${{ env.ARTIFACTS_DIR }}/
+    #     find ${{ env.ARTIFACTS_DIR }}
+    #     echo ARTIFACTS=$(find  ${{ env.ARTIFACTS_DIR }} -name "*.png") >> $GITHUB_ENV
+    #     echo "ARTIFACTS=$ARTIFACTS"
+    # - name: 画像ファイルのアーティファクト化
+    #   if: always() && env.ARTIFACTS != ''
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: result-images
+    #     path: |
+    #       ${{ env.ARTIFACTS }}
+    - name: コンテナの停止
+      if: always()
+      run: docker compose  -p ${{ env.project_name }} down --rmi=local -v --timeout=3
