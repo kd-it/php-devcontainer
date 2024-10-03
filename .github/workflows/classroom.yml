@@ -21,8 +21,8 @@ env:
 permissions:
   checks: write
   actions: read
-  contents: read
-  # contents: write
+  # contents: read
+  contents: write
 jobs:
   run-autograding-tests:
     runs-on: ubuntu-latest
