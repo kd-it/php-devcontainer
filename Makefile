@@ -7,7 +7,7 @@ NO_LARAVEL=
 
 # composer.json(lock)からvendorディレクトリを作成します
 vendor: composer.json
-	@if [ -z "$(NO_LARAVEL)" ]; then \
+	@if [ -z "$(NO_LARAVEL)" -a -f artisan ]; then \
 		composer install; \
 		touch vendor; \
 	else \
@@ -16,10 +16,10 @@ vendor: composer.json
 
 # artisanによりLaravel環境のデータベースの初期化をしなおします
 resetenv:
-	@if [ -z "$(NO_LARAVEL)" ]; then \
+	@if [ -z "$(NO_LARAVEL)" -a -f artisan ]; then \
 		php artisan migrate:fresh --seed; \
 	else \
-		echo "[INFO] NO_LARAVELが宣言されているのでデータベース初期化処理をスキップします。"; \
+		echo "[INFO] NO_LARAVELが宣言されているか、artisanが無いためデータベース初期化処理をスキップします。"; \
 	fi
 
 # テストを実行します(tests/*.py)
