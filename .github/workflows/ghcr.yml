@@ -19,56 +19,86 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  epoch: 0
 
 jobs:
-    build:
+    build-web:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+        - name: ソース取得
+          uses: actions/checkout@v4
+        - name: コンテナレジストリへのログイン
+          uses: docker/login-action@v3
+          with:
+                registry: ${{ env.REGISTRY }}
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+        - name: 現在時刻のEpoch秒を取得してタグに利用
+          id: epoch
+          run: echo "::set-output name=epoch::$(date +%s)"
+        - name: メタデータの取得(Docker)
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web
+            # latestタグも追加
+            flavor: |
+                latest=${{ github.ref == 'refs/heads/main' }}
+                # ${{ steps.epoch.outputs.epoch }}
+            # タグとして先程取得したepochの値を設定
+            tags: |
+                ${{ steps.epoch.outputs.epoch }}
+        - name: Docker Buildxのセットアップ
+          uses: docker/setup-buildx-action@v3
+        - name: Dockerイメージのビルド
+          uses: docker/build-push-action@v4
+          with:
+            context: docker/web
+            #file: ./Dockerfile
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
+            labels: ${{ steps.meta.outputs.labels }}
+            platforms: linux/amd64,linux/arm64
+            provenance: false
+    build-app:
       runs-on: ubuntu-latest
       permissions:
-        contents: read
-        packages: write
-      strategy:
-        matrix:
-          service: [web, app]
-
+          contents: read
+          packages: write
       steps:
-      - name: pushするかの確認
-        run: |
-          if [ -z "${ACT}" ]; then
-            echo "do_push=true" >> $GITHUB_ENV
-          else
-            echo "do_push=false" >> $GITHUB_ENV
-          fi
-      - name: タイムスタンプの取得
-        run: echo "epoch=$(date +%s)" >> $GITHUB_ENV
       - name: ソース取得
         uses: actions/checkout@v4
-      - name: コンテナレジストリへのログイン        # actではログインはしなくていいです
-        if: ${{ !env.ACT  }}
+      - name: コンテナレジストリへのログイン
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+              registry: ${{ env.REGISTRY }}
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 現在時刻のEpoch秒を取得してタグに利用
+        id: epoch
+        run: echo "::set-output name=epoch::$(date +%s)"
       - name: メタデータの取得(Docker)
-        if: ${{ !env.ACT }}
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/app
+          # latestタグも追加
           flavor: |
-            latest=${{ github.ref == 'refs/heads/main' }}
+              latest=${{ github.ref == 'refs/heads/main' }}
+              # ${{ steps.epoch.outputs.epoch }}
+          # タグとして先程取得したepochの値を設定
           tags: |
-            ${{ env.epoch }}
+              ${{ steps.epoch.outputs.epoch }}
       - name: Docker Buildxのセットアップ
         uses: docker/setup-buildx-action@v3
       - name: Dockerイメージのビルド
         uses: docker/build-push-action@v4
         with:
-          context: docker/${{ matrix.service }}
-          #push: true
-          # actの時はpushはしない(false)
-          push: ${{ env.do_push }}
+          context: docker/app
+          #file: ./Dockerfile
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
