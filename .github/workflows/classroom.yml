@@ -61,10 +61,10 @@ jobs:
         mv dot.env .env
     - name: コンテナの起動
       run: docker compose -p ${{ env.project_name }} -f compose.yml -f compose_test.yml up -d --quiet-pull
-    - name: リポジトリの所有者を変更(GitHub上のみ実行)
-      if: ${{ !env.ACT }}
-      run: |
-        docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINER_USER }} /app
+    # - name: リポジトリの所有者を変更(GitHub上のみ実行)
+    #   if: ${{ !env.ACT }}
+    #   run: |
+    #     docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINER_USER }} /app
     - name: PHP外部モジュールのインストール
       run: |
         if [ -f composer.json ]; then
