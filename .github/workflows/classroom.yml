@@ -67,7 +67,7 @@ jobs:
     - name: リポジトリの所有者を変更(GitHub上のみ実行)
       if: ${{ !env.ACT }}
       run: |
-        docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINE_USER }} /app
+        docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINER_USER }} /app
 
     - name: データベースへの接続テスト
       id: dbcheck
