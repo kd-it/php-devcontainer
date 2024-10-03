@@ -61,6 +61,11 @@ jobs:
         mv dot.env .env
     - name: コンテナの起動
       run: docker compose -p ${{ env.project_name }} -f compose.yml -f compose_test.yml up -d --quiet-pull
+    - name: PHP外部モジュールのインストール
+      run: |
+        if [ -f composer.json ]; then
+          docker compose -p ${{ env.project_name }} exec app composer install
+        fi
     - name: 結果画像の削除
       run: |
         rm -vf results/*.png
