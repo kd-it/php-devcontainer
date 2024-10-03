@@ -42,7 +42,10 @@ jobs:
         fi
     - name: Checkout code
       uses: actions/checkout@v4
-
+    - name: リポジトリの所有者を変更(GitHub上のみ実行)
+      if: ${{ !env.ACT }}
+      run: |
+        docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINER_USER }} /app
     - name: SECRETから.envファイルを作成
       # actの環境ではスキップしてよい
       if: ${{ !env.ACT }}
@@ -69,11 +72,6 @@ jobs:
     - name: 結果画像の削除
       run: |
         rm -vf results/*.png
-    - name: リポジトリの所有者を変更(GitHub上のみ実行)
-      if: ${{ !env.ACT }}
-      run: |
-        docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINER_USER }} /app
-
     - name: データベースへの接続テスト
       id: dbcheck
       uses: classroom-resources/autograding-command-grader@v1
