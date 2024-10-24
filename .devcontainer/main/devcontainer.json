@@ -65,7 +65,8 @@
 					"**/.devcontainer": true,
 					"**/compose*.yml": true,
 					"**/docker": true
-				}
+				},
+				"LaravelExtraIntellisense.basePath": "${workspaceFolder}"
 			}
 		}
 	}

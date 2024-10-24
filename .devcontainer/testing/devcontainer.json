@@ -47,7 +47,8 @@
 			],
 			// pythonのインタプリタをpipenvによるものに設定
 			"settings": {
-				"python.pythonPath": "pipenv run python"
+				"python.pythonPath": "pipenv run python",
+				"LaravelExtraIntellisense.basePath": "${workspaceFolder}"
 			}
 		}
 	}
