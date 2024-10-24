@@ -52,7 +52,7 @@ jobs:
                 password: ${{ secrets.GITHUB_TOKEN }}
         - name: 現在時刻のEpoch秒を取得してタグに利用
           id: epoch
-          run: echo "::set-output name=epoch::$(date +%s)"
+          run: echo "name=epoch::$(date +%s)" >> $GITHUB_OUTPUT
         - name: メタデータの取得(Docker)
           id: meta
           uses: docker/metadata-action@v4
@@ -94,7 +94,7 @@ jobs:
               password: ${{ secrets.GITHUB_TOKEN }}
       - name: 現在時刻のEpoch秒を取得してタグに利用
         id: epoch
-        run: echo "::set-output name=epoch::$(date +%s)"
+        run: echo "name=epoch::$(date +%s)" >> $GITHUB_OUTPUT
       - name: メタデータの取得(Docker)
         id: meta
         uses: docker/metadata-action@v4
