@@ -29,9 +29,9 @@ jobs:
         - name: このリポジトリがphp-devcontainerであることを確認
           run: |
             # このリポジトリの名前を取得する
-            repo_name=$(basename $(pwd))
+            repo_name="$(basename "$(pwd)")"
             # このリポジトリの名前がphp-devcontainerであることを確認し、そうでなければエラーを出して停止
-            if [ $repo_name != "php-devcontainer" ]; then
+            if [ "$repo_name" != "php-devcontainer" ]; then
               echo "このリポジトリはイメージビルド用リポジトリではありません"
               exit 1
             fi
