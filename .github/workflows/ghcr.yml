@@ -42,6 +42,11 @@ jobs:
             contents: read
             packages: write
         steps:
+        - name: 現在時刻のEpoch秒を取得してタグに利用
+          id: epoch
+          run: echo "epochtime=$(date +%s)" >> "$GITHUB_OUTPUT"
+        - name: タグ名の確認
+          run: echo "epoch = ${{ steps.epoch.outputs.epochtime }}"
         - name: ソース取得
           uses: actions/checkout@v4
         - name: コンテナレジストリへのログイン
@@ -50,9 +55,6 @@ jobs:
                 registry: ${{ env.REGISTRY }}
                 username: ${{ github.actor }}
                 password: ${{ secrets.GITHUB_TOKEN }}
-        - name: 現在時刻のEpoch秒を取得してタグに利用
-          id: epoch
-          run: echo "epoch=$(date +%s)" >> $GITHUB_OUTPUT
         - name: メタデータの取得(Docker)
           id: meta
           uses: docker/metadata-action@v4
@@ -64,7 +66,7 @@ jobs:
                 # ${{ steps.epoch.outputs.epoch }}
             # タグとして先程取得したepochの値を設定
             tags: |
-                ${{ steps.epoch.outputs.epoch }}
+                ${{ steps.epoch.outputs.epochtime }}
         - name: Docker Buildxのセットアップ
           uses: docker/setup-buildx-action@v3
         - name: Dockerイメージのビルド
@@ -84,6 +86,9 @@ jobs:
           contents: read
           packages: write
       steps:
+      - name: 現在時刻のEpoch秒を取得してタグに利用
+        id: epoch
+        run: echo "epochtime=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: ソース取得
         uses: actions/checkout@v4
       - name: コンテナレジストリへのログイン
@@ -92,9 +97,6 @@ jobs:
               registry: ${{ env.REGISTRY }}
               username: ${{ github.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
-      - name: 現在時刻のEpoch秒を取得してタグに利用
-        id: epoch
-        run: echo "epoch=$(date +%s)" >> $GITHUB_OUTPUT
       - name: メタデータの取得(Docker)
         id: meta
         uses: docker/metadata-action@v4
@@ -106,7 +108,7 @@ jobs:
               # ${{ steps.epoch.outputs.epoch }}
           # タグとして先程取得したepochの値を設定
           tags: |
-              ${{ steps.epoch.outputs.epoch }}
+              ${{ steps.epoch.outputs.epochtime }}
       - name: Docker Buildxのセットアップ
         uses: docker/setup-buildx-action@v3
       - name: Dockerイメージのビルド
