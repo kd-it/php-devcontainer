@@ -6,7 +6,9 @@ PULL=missing
 NO_LARAVEL=
 
 # composer.json(lock)からvendorディレクトリを作成します
-vendor: composer.json
+vendor: vendor/autoload.php
+
+vendor/autoload.php: composer.json
 	@if [ -z "$(NO_LARAVEL)" -a -f artisan ]; then \
 		composer install; \
 		touch vendor; \
@@ -15,7 +17,7 @@ vendor: composer.json
 	fi
 
 # artisanによりLaravel環境のデータベースの初期化をしなおします
-resetenv:
+resetenv: vendor
 	@if [ -z "$(NO_LARAVEL)" -a -f artisan ]; then \
 		php artisan migrate:fresh --seed; \
 	else \
