@@ -9,16 +9,17 @@ NO_LARAVEL=
 vendor: vendor/autoload.php
 
 vendor/autoload.php: composer.json
+	[ -f composer.json ] && composer install
 	@if [ -z "$(NO_LARAVEL)" -a -f artisan ]; then \
-		composer install; \
 		touch vendor; \
 	else \
 		echo "[INFO] NO_LARAVELが宣言されているのでcomposer installをスキップします。"; \
 	fi
 
 # artisanによりLaravel環境のデータベースの初期化をしなおします
-resetenv: vendor
+resetenv:
 	@if [ -z "$(NO_LARAVEL)" -a -f artisan ]; then \
+		make vendor; \
 		php artisan migrate:fresh --seed; \
 	else \
 		echo "[INFO] NO_LARAVELが宣言されているか、artisanが無いためデータベース初期化処理をスキップします。"; \
