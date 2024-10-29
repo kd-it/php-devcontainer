@@ -9,6 +9,7 @@ services:
       - selenium
 
   app:
+    tmpfs: /app/vendor
 
   selenium:
     image: seleniarm/standalone-chromium

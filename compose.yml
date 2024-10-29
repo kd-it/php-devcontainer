@@ -18,6 +18,7 @@ services:
       - env.txt
     volumes:
       - .:/app:cached
+      - vendor:/app/vendor
 
   db:
     image: ghcr.io/densuke/mysql:main
@@ -37,4 +38,5 @@ services:
 
 volumes:
   db_data:
+  vendor:
 
