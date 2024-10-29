@@ -1,8 +1,8 @@
 services:
   web:
     # ポートフォワードをリセット(テスト環境で閉じておく)
-    ports:
-      - 80
+    # ports:
+    #   - 80
     depends_on:
       - app
       - db
