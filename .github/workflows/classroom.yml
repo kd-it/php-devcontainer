@@ -32,14 +32,8 @@ jobs:
     - name: Laravel環境フラグの設定
       id: no_laravel
       run: |
-        # if [ ! -f composer.json ]; then
-        #   echo "::set-output name=result::NO_LARAVEL=1"
-        #   exit 0
-        # fi
         if [ ${{ env.NO_LARAVEL}} = true ]; then
-          echo "::set-output name=result::NO_LARAVEL=1"
-        else
-          echo "::set-output name=result::"
+          echo "NO_LARAVEL=1" >> "$GITHUB_OUTPUT"
         fi
     - name: Checkout code
       uses: actions/checkout@v4
@@ -54,10 +48,10 @@ jobs:
           exit 0
         fi
         # SecretのDOTENVがある場合、そこから.envを作成する、ただし.envがある場合はスキップしてよい
-        if [ ! -z "${{ secrets.DOTENV }}" ]; then
+        if [ -n "${{ secrets.DOTENV }}" ]; then
           echo "DOTENVから.envを作成します"
           echo "${{ secrets.DOTENV }}" > /tmp/dot.env
-          if [ $(wc -c < /tmp/dot.env) -le 10 ]; then
+          if [ "$(wc -c < /tmp/dot.env)" -le 10 ]; then
             echo "GitHub SecretのDOTENVが小さすぎます、 Settings > Secrets and Variables > Actions にて確認してください"
             exit 1
           fi
