@@ -69,6 +69,10 @@ jobs:
       if: ${{ !env.ACT }}
       run: |
         docker compose -p ${{ env.project_name }} exec app sudo chown -R ${{ env.CONTAINER_USER }} /app
+    - name: /app/vendorの所有権を調整
+      run: |
+        docker compose -p ${{ env.project_name }} exec app sh -c 'cat /proc/mounts | grep vendor'
+        docker compose -p ${{ env.project_name }} exec app sh -c 'sudo chown -R `id -u`:`id -g` /app/vendor'
     - name: PHP外部モジュールのインストール
       run: |
         if [ -f composer.json ]; then
