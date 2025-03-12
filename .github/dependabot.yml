@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # 利用しているJavaScriptモジュール類について、毎週ペースで最新版をチェックし、
+  # 必要に応じてPRを作成する
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "npm更新:"
+    labels:
+      - "dependencies"
+  # 利用しているPythonのモジュール類について、毎週ペースで最新版をチェックし、
+  # 必要に応じてPRを作成する
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "pip更新:"
+    labels:
+      - "dependencies"
+    # 利用しているphpのモジュール類について、毎週ペースで最新版をチェックし、
+  # 必要に応じてPRを作成する
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "composer更新:"
+    labels:
+      - "dependencies"
