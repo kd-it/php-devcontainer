@@ -21,7 +21,7 @@ updates:
     labels:
       - "dependencies"
     # 利用しているphpのモジュール類について、毎週ペースで最新版をチェックし、
-  # 必要に応じてPRを作成する
+    # 必要に応じてPRを作成する
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
@@ -30,3 +30,6 @@ updates:
       prefix: "composer更新:"
     labels:
       - "dependencies"
+    ignore:
+      - dependency-name: "*"
+        versions: ["<0.0.0"]
