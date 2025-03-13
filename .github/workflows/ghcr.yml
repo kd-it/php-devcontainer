@@ -7,86 +7,122 @@
 
 name: image CI
 on:
-    # ディレクトリdocker/webとdocker/appに変更があったときに実行
-    push:
-        paths:
-            - 'docker/web/**'
-            - 'docker/app/**'
-            - '.github/workflows/ghcr.yml'
-    # 手動で実行する場合
-    workflow_dispatch:
+  # ディレクトリdocker/webとdocker/appに変更があったときに実行
+  push:
+    paths:
+      - "docker/web/**"
+      - "docker/app/**"
+      - ".github/workflows/ghcr.yml"
+  # 手動で実行する場合
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-    repo-check:
-        runs-on: ubuntu-latest
-        steps:
-        - name: ソース取得
-          uses: actions/checkout@v4
-        - name: このリポジトリがphp-devcontainerであることを確認
-          run: |
-            # このリポジトリの名前を取得する
-            repo_name="$(basename "$(pwd)")"
-            # このリポジトリの名前がphp-devcontainerであることを確認し、そうでなければエラーを出して停止
-            if [ "$repo_name" != "php-devcontainer" ]; then
-              echo "このリポジトリはイメージビルド用リポジトリではありません"
-              exit 1
-            fi
-    build-web:
-        runs-on: ubuntu-latest
-        needs: repo-check
-        permissions:
-            contents: read
-            packages: write
-        steps:
-        - name: 現在時刻のEpoch秒を取得してタグに利用
-          id: epoch
-          run: echo "epochtime=$(date +%s)" >> "$GITHUB_OUTPUT"
-        - name: タグ名の確認
-          run: echo "epoch = ${{ steps.epoch.outputs.epochtime }}"
-        - name: ソース取得
-          uses: actions/checkout@v4
-        - name: コンテナレジストリへのログイン
-          uses: docker/login-action@v3
-          with:
-                registry: ${{ env.REGISTRY }}
-                username: ${{ github.actor }}
-                password: ${{ secrets.GITHUB_TOKEN }}
-        - name: メタデータの取得(Docker)
-          id: meta
-          uses: docker/metadata-action@v4
-          with:
-            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web
-            # latestタグも追加
-            flavor: |
-                latest=${{ github.ref == 'refs/heads/main' }}
-                # ${{ steps.epoch.outputs.epoch }}
-            # タグとして先程取得したepochの値を設定
-            tags: |
-                ${{ steps.epoch.outputs.epochtime }}
-                ${{ github.ref_name }}
-        - name: Docker Buildxのセットアップ
-          uses: docker/setup-buildx-action@v3
-        - name: Dockerイメージのビルド
-          uses: docker/build-push-action@v4
-          with:
-            context: docker/web
-            #file: ./Dockerfile
-            push: true
-            tags: ${{ steps.meta.outputs.tags }}
-            labels: ${{ steps.meta.outputs.labels }}
-            platforms: linux/amd64,linux/arm64
-            provenance: false
-    build-app:
-      runs-on: ubuntu-latest
-      needs: repo-check
-      permissions:
-          contents: read
-          packages: write
-      steps:
+  repo-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ソース取得
+        uses: actions/checkout@v4
+      - name: このリポジトリがphp-devcontainerであることを確認
+        run: |
+          # このリポジトリの名前を取得する
+          repo_name="$(basename "$(pwd)")"
+          # このリポジトリの名前がphp-devcontainerであることを確認し、そうでなければエラーを出して停止
+          if [ "$repo_name" != "php-devcontainer" ]; then
+            echo "このリポジトリはイメージビルド用リポジトリではありません"
+            exit 1
+          fi
+  test:
+    runs-on: ubuntu-latest
+    needs: repo-check
+    steps:
+      - name: ソース取得
+        uses: actions/checkout@v4
+      # tests/compose.ymlを使ってコンテナ達を起動する
+      - name: コンテナの起動
+        run: docker compose -f tests/compose.yml up -d
+      - name: テストを実行する
+        run: docker compose -f tests/compose.yml exec app make test FILE=./tests/test_web_connect.py
+      - name: コンテナの停止
+        if: always()
+        run: docker compose -f tests/compose.yml down -v --remove-orphans
+      - name: テスト通過のフラグをたてておく
+        run: echo "test_passed=true" >> "$GITHUB_OUTPUT"
+
+  stop-if-running-on-act:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+      - name: actで実行中か確認
+        if: ${{ env.ACT }}
+        run: |
+          echo "actで実行中のため、以降は停止します"
+          exit 1
+
+  build-web:
+    runs-on: ubuntu-latest
+    needs:
+      - stop-if-running-on-act
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: テスト通過の確認
+        if: ${{ needs.test.outputs.test_passed == 'true' }}
+        run: echo "test passed"
+      - name: 現在時刻のEpoch秒を取得してタグに利用
+        id: epoch
+        run: echo "epochtime=$(date +%s)" >> "$GITHUB_OUTPUT"
+      - name: タグ名の確認
+        run: echo "epoch = ${{ steps.epoch.outputs.epochtime }}"
+      - name: ソース取得
+        uses: actions/checkout@v4
+      - name: コンテナレジストリへのログイン
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: メタデータの取得(Docker)
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web
+          # latestタグも追加
+          flavor: |
+            latest=${{ github.ref == 'refs/heads/main' }}
+            # ${{ steps.epoch.outputs.epoch }}
+          # タグとして先程取得したepochの値を設定
+          tags: |
+            ${{ steps.epoch.outputs.epochtime }}
+            ${{ github.ref_name }}
+      - name: Docker Buildxのセットアップ
+        uses: docker/setup-buildx-action@v3
+      - name: Dockerイメージのビルド
+        uses: docker/build-push-action@v4
+        with:
+          context: docker/web
+          #file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+  build-app:
+    runs-on: ubuntu-latest
+    needs:
+      - stop-if-running-on-act
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: テスト通過の確認
+        if: ${{ needs.test.outputs.test_passed == 'true' }}
+        run: echo "test passed"
       - name: 現在時刻のEpoch秒を取得してタグに利用
         id: epoch
         run: echo "epochtime=$(date +%s)" >> "$GITHUB_OUTPUT"
@@ -95,9 +131,9 @@ jobs:
       - name: コンテナレジストリへのログイン
         uses: docker/login-action@v3
         with:
-              registry: ${{ env.REGISTRY }}
-              username: ${{ github.actor }}
-              password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: メタデータの取得(Docker)
         id: meta
         uses: docker/metadata-action@v4
@@ -105,12 +141,12 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/app
           # latestタグも追加
           flavor: |
-              latest=${{ github.ref == 'refs/heads/main' }}
-              # ${{ steps.epoch.outputs.epoch }}
+            latest=${{ github.ref == 'refs/heads/main' }}
+            # ${{ steps.epoch.outputs.epoch }}
           # タグとして先程取得したepochの値を設定
           tags: |
-              ${{ steps.epoch.outputs.epochtime }}
-              ${{ github.ref_name }}
+            ${{ steps.epoch.outputs.epochtime }}
+            ${{ github.ref_name }}
       - name: Docker Buildxのセットアップ
         uses: docker/setup-buildx-action@v3
       - name: Dockerイメージのビルド
