@@ -93,11 +93,6 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: テスト通過の確認
-        if: ${{ needs.test.outputs.test_passed == 'true' }}
-        run: echo "test passed"
-      - name: タグ名の確認
-        run: echo "epoch = ${{ needs.make-tag.outputs.tag }}"
       - name: ソース取得
         uses: actions/checkout@v4
       - name: コンテナレジストリへのログイン
@@ -140,9 +135,6 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: テスト通過の確認
-        if: ${{ needs.test.outputs.test_passed == 'true' }}
-        run: echo "test passed"
       - name: ソース取得
         uses: actions/checkout@v4
       - name: コンテナレジストリへのログイン
