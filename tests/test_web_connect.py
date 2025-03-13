@@ -25,11 +25,14 @@ class TestWebConnect(unittest.TestCase):
     # publicディレクトリを作ったかどうかのフラグ
     PUBLIC_DIR_CREATED = False
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         logger.info("Selenuimに接続します")
-        self.driver = webdriver.Remote(self.REMOTE_URL, options=webdriver.ChromeOptions())
+        cls.driver = webdriver.Remote(cls.REMOTE_URL, options=webdriver.ChromeOptions())
         logger.info("Selenuimに接続しました")
-        self.driver.implicitly_wait(10)
+        cls.driver.implicitly_wait(10)
+
+    def setUp(self):
         # publicディレクトリがない場合は作成する
         if not os.path.isdir("public"):
             os.mkdir("public")
@@ -58,15 +61,18 @@ class TestWebConnect(unittest.TestCase):
         self.assertIn("Hello, PHP", self.driver.page_source)
 
     def tearDown(self):
-        self.driver.quit()
         # public/.gitkeep.htmlを削除
-        import os
         os.remove(self.TEST_FILE)
         os.remove(self.TEST_PHP_FILE)
         # publicディレクトリを作成した場合は削除する
         if self.PUBLIC_DIR_CREATED:
             os.rmdir("public")
             logger.info("Remove public directory")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
+        logger.info("Seleniumとの接続を終了しました")
 
 if __name__ == '__main__':
     unittest.main()
