@@ -133,3 +133,40 @@ jobs:
           platforms: linux/amd64,linux/arm64
           provenance: false
           build-args: --quiet
+
+  # compose.ymlを更新する
+  ## compose.ymlのappとwebのイメージを更新します
+  update-compose:
+    runs-on: ubuntu-latest
+    needs:
+      - build-image
+      - make-tag
+    permissions:
+      contents: write # リポジトリの内容を変更するために必要
+      pull-requests: write # プルリクエスト作成に必要
+    steps:
+      # ソースを取得する
+      - name: ソース取得
+        uses: actions/checkout@v4
+      # compose.ymlを更新する、
+      # appとwebのそれぞれのサービス定義のところにあるimageキーの値を更新する
+      # タグ部分はneeds.make-tag.outputs.tagの値を使えばよい
+      - name: compose.ymlの更新
+        run: |
+          sed -i -r -e \
+            's|ghcr.io/kd-it/php-devcontainer/web:[0-9]+|ghcr.io/kd-it/php-devcontainer/web:${{ needs.make-tag.outputs.tag }}|' \
+              -e \
+            's|ghcr.io/kd-it/php-devcontainer/app:[0-9]+|ghcr.io/kd-it/php-devcontainer/app:${{ needs.make-tag.outputs.tag }}|' compose.yml
+      - name: プルリクエストの作成
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "タグ更新: ${{ needs.make-tag.outputs.tag }}"
+          title: "タグ更新: ${{ needs.make-tag.outputs.tag }}"
+          body: "タグを更新しました: ${{ needs.make-tag.outputs.tag }}"
+          branch: "update-compose-${{ needs.make-tag.outputs.tag }}"
+          base: "main"
+          labels: "update-compose"
+          reviewers: "densuke"
+          assignees: "densuke"
+          draft: false
