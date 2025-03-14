@@ -59,7 +59,7 @@ jobs:
           chmod -R 777 public
       # tests/compose.ymlを使ってコンテナ達を起動する
       - name: コンテナの起動
-        run: docker compose -f tests/compose.yml up -d
+        run: docker compose -f tests/compose.yml up --quiet-pull  -d
       # rootユーザーとしてテストを実行する
       - name: テストを実行する
         run: docker compose -f tests/compose.yml exec -u root app make test FILE=./tests/test_web_connect.py
