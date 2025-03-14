@@ -16,6 +16,11 @@ on:
   # 手動で実行する場合
   workflow_dispatch:
 
+# 新しいワークフロー発動時に古いワークフローを自動キャンセル
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
