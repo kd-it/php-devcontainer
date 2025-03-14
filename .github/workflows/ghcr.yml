@@ -99,7 +99,6 @@ jobs:
       packages: write
     strategy:
       matrix:
-        context: [docker/web, docker/app]
         image_name: [web, app]
     steps:
       - name: ソース取得
@@ -125,7 +124,7 @@ jobs:
       - name: Dockerイメージのビルド
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
+          context: docker/${{ matrix.image_name }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
