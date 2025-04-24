@@ -19,3 +19,4 @@ yarn-error.log
 /results/*.jpg
 
 database/database.sqlite
+.env*
