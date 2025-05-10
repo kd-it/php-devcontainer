@@ -1,19 +1,21 @@
 # 現在、このワークフローはLaravelを使わないこと前提の設定にしています
 # 切り替えたい場合は、下部のenv:部分を参照して変更を加えてください
 
-name: 自動テスト(自動評価)
-'on':
+x-common-paths: &common_paths
+  - "app/**"
+  - "public/**"
+  - "resources/**"
+  - "routes/**"
+  - "tests/**"
+  - "config/**"
+  - ".github/workflows/classroom.yml"
+  - ".env"
+on:
   push:
-    paths:
-      - "app/**"
-      - "public/**"
-      - "resources/**"
-      - "routes/**"
-      - "tests/**"
-      - "config/**"
-      - ".github/workflows/classroom.yml"
-      - ".env"
+    paths: *common_paths
   workflow_dispatch:
+  pull_request:
+    paths: *common_paths
 
 env:
   project_name: test-${{ github.run_id }}
