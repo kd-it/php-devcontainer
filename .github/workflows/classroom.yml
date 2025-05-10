@@ -30,6 +30,10 @@ on:
     - ".github/workflows/classroom.yml"
     - ".env"
 
+# 重複発火しないように並列処理を抑制
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   project_name: test-${{ github.run_id }}
