@@ -3,7 +3,7 @@
 
 on:
   push:
-    paths: &common_paths
+    paths:
     - "app/**"
     - "public/**"
     - "resources/**"
@@ -14,7 +14,16 @@ on:
     - ".env"
   workflow_dispatch:
   pull_request:
-    paths: *common_paths
+    paths:
+    - "app/**"
+    - "public/**"
+    - "resources/**"
+    - "routes/**"
+    - "tests/**"
+    - "config/**"
+    - ".github/workflows/classroom.yml"
+    - ".env"
+
 
 env:
   project_name: test-${{ github.run_id }}
