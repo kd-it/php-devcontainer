@@ -18,5 +18,10 @@ services:
       - 7900 # NoVNC server
     shm_size: 2gb
 
+  # テスト時のDBはtmpfsを使うことで削除忘れを防止するように変更(設定の上書き)
   db:
-    tmpfs: /var/lib/mysql
+    volumes:
+      - type: tmpfs
+        target: /var/lib/mysql
+        tmpfs:
+          size: 1g
