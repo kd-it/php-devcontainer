@@ -5,6 +5,7 @@ import logging
 
 # ロギング出力を制御するフラグ（True: 出力する, False: 出力しない）
 ENABLE_LOGGING = True
+RESULT_DIR = "results"
 
 # ロギングの設定をクラスの外で一度だけ行う
 logger = logging.getLogger(__name__)
@@ -27,9 +28,9 @@ class TestWebConnect(unittest.TestCase):
 
     def _capture_screenshot(self, basename):
         # 取得ページのスクリーンショットをresults以下に保存
-        os.makedirs("results", exist_ok=True)
-        self.driver.save_screenshot(f"results/{basename}.png")
-        logger.info(f"Capture screenshot: results/{basename}.png")
+        os.makedirs(RESULT_DIR, exist_ok=True)
+        self.driver.save_screenshot(f"{RESULT_DIR}/{basename}.png")
+        logger.info(f"Capture screenshot: {RESULT_DIR}/{basename}.png")
 
 
     @classmethod
