@@ -31,7 +31,7 @@ env:
   CONTAINER_USER: vscode
   # Laravelを使わず純粋なPHPで作成した場合はtrueに設定してください
   NO_LARAVEL: true
-  ARTIFACTS: /results/*.png
+  ARTIFACTS: /results
 
 permissions:
   checks: write
