@@ -1,3 +1,6 @@
+# 現在、このワークフローはLaravelを使わないこと前提の設定にしています
+# 切り替えたい場合は、下部のenv:部分を参照して変更を加えてください
+
 name: 自動テスト(自動評価)
 'on':
   push:
@@ -17,7 +20,7 @@ env:
   LANG: ja_JP.UTF-8
   CONTAINER_USER: vscode
   # Laravelを使わず純粋なPHPで作成した場合はtrueに設定してください
-  NO_LARAVEL: false
+  NO_LARAVEL: true
 
 permissions:
   checks: write
