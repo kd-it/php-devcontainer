@@ -34,9 +34,9 @@ class TestWebConnect(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        logger.info("Selenuimに接続します")
+        logger.info("Seleniumに接続します")
         cls.driver = webdriver.Remote(cls.REMOTE_URL, options=webdriver.ChromeOptions())
-        logger.info("Selenuimに接続しました")
+        logger.info("Seleniumに接続しました")
         cls.driver.implicitly_wait(10)
 
     def setUp(self):
