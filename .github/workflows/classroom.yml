@@ -103,7 +103,7 @@ jobs:
       uses: classroom-resources/autograding-command-grader@v1
       with:
         test-name: toppage
-        command: 'docker compose -p ${{ env.project_name }} exec app make test FILE=tests/test_minishop_toppage.py ${{ steps.no_laravel.outputs.result }}'
+        command: 'docker compose -p ${{ env.project_name }} exec app make test FILE=tests/test_web_connect.py ${{ steps.no_laravel.outputs.result }}'
         max-score: 1
         timeout: 2
 
