@@ -51,6 +51,10 @@ class TestWebConnect(unittest.TestCase):
         filename = os.path.basename(self.TEST_FILE)
         self.driver.get(f'http://web/{filename}')
         logger.info(self.driver.page_source)
+        # 現在実行中の関数(メソッド)名を取得
+        current_function_name = self._testMethodName
+        # 取得ページのスクリーンショットをresults以下に保存
+        self.driver.save_screenshot(f"results/{current_function_name}.png")
         self.assertIn("Hello, Keeper", self.driver.page_source)
 
     def test_php_connect(self):
@@ -58,6 +62,10 @@ class TestWebConnect(unittest.TestCase):
         filename = os.path.basename(self.TEST_PHP_FILE)
         self.driver.get(f'http://web/{filename}')
         logger.info(self.driver.page_source)
+        # 現在実行中の関数(メソッド)名を取得
+        current_function_name = self._testMethodName
+        # 取得ページのスクリーンショットをresults以下に保存
+        self.driver.save_screenshot(f"results/{current_function_name}.png")
         self.assertIn("Hello, PHP", self.driver.page_source)
 
     def tearDown(self):
