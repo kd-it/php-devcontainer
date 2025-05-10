@@ -122,15 +122,6 @@ jobs:
         max-score: 1
         timeout: 2
 
-    - name: resultsディレクトリの中身の出力(確認用)
-      run: |
-        (set -x
-        echo "=== in container ==="
-        docker compose -p ${{ env.project_name }} exec app sh -c 'ls -l /app/results'
-        echo "=== in local ==="
-        ls -l results
-        )
-        exit 0
 
     - name: Autograding Reporter
       uses: classroom-resources/autograding-grading-reporter@v1
