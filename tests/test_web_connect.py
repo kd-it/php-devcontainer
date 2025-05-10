@@ -54,6 +54,9 @@ class TestWebConnect(unittest.TestCase):
         # 現在実行中の関数(メソッド)名を取得
         current_function_name = self._testMethodName
         # 取得ページのスクリーンショットをresults以下に保存
+        if not os.path.exists("results"):
+            os.mkdir("results")
+            logger.info("Create results directory")
         self.driver.save_screenshot(f"results/{current_function_name}.png")
         self.assertIn("Hello, Keeper", self.driver.page_source)
 
