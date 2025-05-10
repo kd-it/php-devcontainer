@@ -1,18 +1,17 @@
 # 現在、このワークフローはLaravelを使わないこと前提の設定にしています
 # 切り替えたい場合は、下部のenv:部分を参照して変更を加えてください
 
-x-common-paths: &common_paths
-  - "app/**"
-  - "public/**"
-  - "resources/**"
-  - "routes/**"
-  - "tests/**"
-  - "config/**"
-  - ".github/workflows/classroom.yml"
-  - ".env"
 on:
   push:
-    paths: *common_paths
+    paths: &common_paths
+    - "app/**"
+    - "public/**"
+    - "resources/**"
+    - "routes/**"
+    - "tests/**"
+    - "config/**"
+    - ".github/workflows/classroom.yml"
+    - ".env"
   workflow_dispatch:
   pull_request:
     paths: *common_paths
