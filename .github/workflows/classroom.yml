@@ -3,6 +3,9 @@
 
 on:
   push:
+    branches-ignore:
+      - main
+      - master
     paths:
     - "app/**"
     - "public/**"
@@ -14,6 +17,9 @@ on:
     - ".env"
   workflow_dispatch:
   pull_request:
+    branches:
+      - main
+      - master
     paths:
     - "app/**"
     - "public/**"
@@ -24,6 +30,10 @@ on:
     - ".github/workflows/classroom.yml"
     - ".env"
 
+# 重複発火しないように並列処理を抑制
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   project_name: test-${{ github.run_id }}
@@ -31,6 +41,7 @@ env:
   CONTAINER_USER: vscode
   # Laravelを使わず純粋なPHPで作成した場合はtrueに設定してください
   NO_LARAVEL: true
+  ARTIFACTS: results
 
 permissions:
   checks: write
@@ -96,6 +107,8 @@ jobs:
     - name: 結果画像の削除
       run: |
         rm -vf results/*.png
+        rm -vf results/*.jpg
+
     - name: リポジトリの所有者を変更(GitHub上のみ実行)
       if: ${{ !env.ACT }}
       run: |
@@ -119,6 +132,7 @@ jobs:
         max-score: 1
         timeout: 2
 
+
     - name: Autograding Reporter
       uses: classroom-resources/autograding-grading-reporter@v1
       env:
@@ -139,13 +153,14 @@ jobs:
     #     find ${{ env.ARTIFACTS_DIR }}
     #     echo ARTIFACTS=$(find  ${{ env.ARTIFACTS_DIR }} -name "*.png") >> $GITHUB_ENV
     #     echo "ARTIFACTS=$ARTIFACTS"
-    # - name: 画像ファイルのアーティファクト化
-    #   if: always() && env.ARTIFACTS != ''
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: result-images
-    #     path: |
-    #       ${{ env.ARTIFACTS }}
+    - name: 画像ファイルのアーティファクト化
+      if: always() && env.ARTIFACTS != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: result-images
+        path: |
+          ${{ env.ARTIFACTS }}/*.png
+          ${{ env.ARTIFACTS }}/*.jpg
     - name: コンテナの停止
       if: always()
       run: docker compose  -p ${{ env.project_name }} down --rmi=local -v --timeout=3

@@ -5,6 +5,7 @@ import logging
 
 # ロギング出力を制御するフラグ（True: 出力する, False: 出力しない）
 ENABLE_LOGGING = True
+RESULT_DIR = "results"
 
 # ロギングの設定をクラスの外で一度だけ行う
 logger = logging.getLogger(__name__)
@@ -25,11 +26,18 @@ class TestWebConnect(unittest.TestCase):
     # publicディレクトリを作ったかどうかのフラグ
     PUBLIC_DIR_CREATED = False
 
+    def _capture_screenshot(self, basename):
+        # 取得ページのスクリーンショットをresults以下に保存
+        os.makedirs(RESULT_DIR, exist_ok=True)
+        self.driver.save_screenshot(f"{RESULT_DIR}/{basename}.png")
+        logger.info(f"Capture screenshot: {RESULT_DIR}/{basename}.png")
+
+
     @classmethod
     def setUpClass(cls):
-        logger.info("Selenuimに接続します")
+        logger.info("Seleniumに接続します")
         cls.driver = webdriver.Remote(cls.REMOTE_URL, options=webdriver.ChromeOptions())
-        logger.info("Selenuimに接続しました")
+        logger.info("Seleniumに接続しました")
         cls.driver.implicitly_wait(10)
 
     def setUp(self):
@@ -51,6 +59,8 @@ class TestWebConnect(unittest.TestCase):
         filename = os.path.basename(self.TEST_FILE)
         self.driver.get(f'http://web/{filename}')
         logger.info(self.driver.page_source)
+        # 現在実行中の関数(メソッド)名を取得してスクリーンショットを保存
+        self._capture_screenshot(self._testMethodName)
         self.assertIn("Hello, Keeper", self.driver.page_source)
 
     def test_php_connect(self):
@@ -58,6 +68,8 @@ class TestWebConnect(unittest.TestCase):
         filename = os.path.basename(self.TEST_PHP_FILE)
         self.driver.get(f'http://web/{filename}')
         logger.info(self.driver.page_source)
+        # 現在実行中の関数(メソッド)名を取得してスクリーンショットを保存
+        self._capture_screenshot(self._testMethodName)
         self.assertIn("Hello, PHP", self.driver.page_source)
 
     def tearDown(self):
