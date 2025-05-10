@@ -27,10 +27,9 @@ class TestWebConnect(unittest.TestCase):
 
     def _capture_screenshot(self, basename):
         # 取得ページのスクリーンショットをresults以下に保存
-        if not os.path.exists("results"):
-            os.mkdir("results")
-            logger.info("Create results directory")
+        os.makedirs("results", exist_ok=True)
         self.driver.save_screenshot(f"results/{basename}.png")
+        logger.info(f"Capture screenshot: results/{basename}.png")
 
 
     @classmethod
