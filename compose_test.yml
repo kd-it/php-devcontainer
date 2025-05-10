@@ -9,7 +9,11 @@ services:
       - selenium
 
   app:
-    tmpfs: /app/vendor
+    volumes:
+      - type: tmpfs
+        target: /app/vendor
+        tmpfs:
+          size: 1g
 
   selenium:
     image: seleniarm/standalone-chromium
