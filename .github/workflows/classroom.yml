@@ -1,4 +1,4 @@
-name: Autograding Tests
+name: 自動テスト(自動評価)
 'on':
   push:
     paths:
