@@ -50,6 +50,8 @@ jobs:
         fi
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: .envファイルの作成(GitHub)
       # actの環境ではスキップしてよい
