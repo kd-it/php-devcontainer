@@ -1,13 +1,13 @@
 #!/bin/sh
-REAL_COMPOSER=/usr/bin/composer
+REAL_LARAVEL=$HOME/.composer/vendor/bin/laravel
 
-# 本来のcomposerに対するラッパースクリプト
+# 本来のlaravelに対するラッパースクリプト
 # 授業配布のディレクトリはすでに内容が入っているため、必要であれば他のディレクトリで初期状態をつくってマージしないといけない
 # そのためのスクリプトとなっている
 
-# 第1引数が"create-project"以外であればそのまま動かす
-if [ ! "z$1" = "zcreate-project" ]; then
-    exec ${REAL_COMPOSER} "$@"
+# 第1引数が"new"以外であればそのまま動かす
+if [ ! "z$1" = "znew" ]; then
+    exec ${REAL_LARAVEL} "$@"
 fi
 
 # 最後の引数をディレクトリとみなして、一度変数DESTに取り出しておく
@@ -15,7 +15,7 @@ DEST="${@: -1}"
 
 # 対象ディレクトリが空っぽであれば、本来のcomposerにそのまま仕事を任せる
 if [ ! -d ${DEST} ]; then
-    exec ${REAL_COMPOSER} "$@"
+    exec ${REAL_LARAVEL} "$@"
 fi
 
 WORKDIR=$(mktemp -d -u)
@@ -38,7 +38,8 @@ for arg in "$@"; do
 done
 
 set -e
-${REAL_COMPOSER} $new_args ${WORKDIR}
+cd $(dirname ${WORKDIR})
+${REAL_LARAVEL} $new_args $(basename ${WORKDIR})
 set +e
 
 cd $WORKDIR
@@ -53,4 +54,4 @@ sed -ie '/^\.env.*/d' .gitignore && cat <<EOM >> /dev/stderr && sleep 3
 EOM
 cp -rf . ${DEST}
 cd ${DEST}
-${REAL_COMPOSER} install
+composer install
