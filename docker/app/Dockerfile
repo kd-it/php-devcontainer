@@ -32,6 +32,9 @@ RUN apk add --no-cache \
     make \
     sudo && \
     rm -fr /var/cache/apk
+RUN apk add --no-cache \
+    npm && \
+    rm -fr /var/cache/apk
 # RUN pecl install xdebug \
 #     && docker-php-ext-enable xdebug
 RUN docker-php-ext-install mysqli pdo_mysql
