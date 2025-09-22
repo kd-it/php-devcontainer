@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/kd-it/php-devcontainer/web:1748233351
+    image: ghcr.io/kd-it/php-devcontainer/web:1758509604
     # build: docker/web
     volumes:
       - .:/app:cached
@@ -11,7 +11,7 @@ services:
       - db
 
   app:
-    image: ghcr.io/kd-it/php-devcontainer/app:1748233351
+    image: ghcr.io/kd-it/php-devcontainer/app:1758509604
     # build: docker/app
     env_file:
       - env.txt
