@@ -55,3 +55,12 @@ EOM
 cp -rf . ${DEST}
 cd ${DEST}
 composer install
+if which npm >/dev/null 2>&1; then
+    if [ -f package.json ]; then
+        npm install
+        npm build
+        if [ -f webpack.mix.js ]; then
+            npx mix
+        fi
+    fi
+fi
