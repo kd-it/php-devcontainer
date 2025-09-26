@@ -4,6 +4,17 @@ REAL_LARAVEL=$HOME/.composer/vendor/bin/laravel
 # 本来のlaravelに対するラッパースクリプト
 # 授業配布のディレクトリはすでに内容が入っているため、必要であれば他のディレクトリで初期状態をつくってマージしないといけない
 # そのためのスクリプトとなっている
+(if [ ! -x ${REAL_LARAVEL} ]; then
+    set -e
+    echo "Laravelコマンドが入っていません、先にインストールを行ってから継続します"
+    composer global require "laravel/installer"
+    if [ ! -x ${REAL_LARAVEL} ]; then
+        echo "Laravelコマンドのインストールに失敗しました"
+        exit 1
+    fi
+    echo "Laravelコマンドのインストールが完了しました、この後継続します"
+    sleep 5
+fi)
 
 # 第1引数が"new"以外であればそのまま動かす
 if [ ! "z$1" = "znew" ]; then

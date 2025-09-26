@@ -65,5 +65,5 @@ RUN chown -R "${USERNAME}:${USERNAME}" /app
 
 USER ${USERNAME}
 ENV PATH="${PATH}:/home/${USERNAME}/.composer/vendor/bin:/home/${USERNAME}/.local/bin"
-RUN composer global require "laravel/installer"
+#RUN composer global require "laravel/installer"
 
